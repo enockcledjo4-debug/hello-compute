@@ -1,0 +1,29 @@
+const express = require('express');
+const { exec } = require('child_process');
+const app = express();
+
+app.get('/', (req, res) => {
+    exec('nmcli dev wifi', (error, stdout) => {
+        if (error) {
+            res.json({ security: "Erreur lors de la détection" });
+            return;
+        }
+
+        let securityType = "Inconnu ou non protégé";
+        if (stdout.includes("WEP")) {
+            securityType = "WEP (faible sécurité)";
+        } else if (stdout.includes("WPA3")) {
+            securityType = "WPA3 (très sécurisé)";
+        } else if (stdout.includes("WPA2")) {
+            securityType = "WPA2 (sécurité standard)";
+        } else if (stdout.includes("WPA")) {
+            securityType = "WPA (sécurité moyenne)";
+        }
+
+        res.json({ security: securityType });
+    });
+});
+
+app.listen(3000, () => {
+    console.log('Serveur démarré sur le port 3000');
+});
